@@ -1,0 +1,14 @@
+[package]
+name = "parse_list"
+version = "1.0.0"
+authors = ["Brian Anderson <andersrb@gmail.com>"]
+edition = "2018"
+license = "Apache-2.0/MIT/BSL-1.0/CC0-1.0"
+description = "Parse files and lists of stringified things into lists of thingified things"
+repository = "https://github.com/brson/parse_list"
+readme = "README.md"
+categories = ["parsing"]
+
+[dev-dependencies]
+tempdir = "0.3.7"
+big_s = "1.0.2"
