@@ -1,6 +1,6 @@
 [package]
 name = "parse_list"
-version = "1.0.0"
+version = "2.0.0"
 authors = ["Brian Anderson <andersrb@gmail.com>"]
 edition = "2018"
 license = "Apache-2.0/MIT/BSL-1.0/CC0-1.0"
