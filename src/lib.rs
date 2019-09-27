@@ -73,20 +73,20 @@
 use std::marker::PhantomData;
 use std::fmt::{self, Display};
 use std::error::Error;
-use std::iter::Iterator;
+use std::iter::{Iterator, Filter};
 use std::fs::File;
 use std::io::{self, Read, BufReader, BufRead, Lines};
 use std::path::Path;
 use std::str::FromStr;
 
-pub fn from_file_lines<T>(p: &Path) -> Result<ParseListIterator<T, Lines<BufReader<File>>>, io::Error>
+pub fn from_file_lines<T>(p: &Path) -> Result<ParseListIterator<T, Filter<Lines<BufReader<File>>, fn(&Result<String, io::Error>) -> bool>>, io::Error>
 where T: FromStr,
       T::Err: Error + Send + Sync + 'static {
     let f = File::open(p)?;
     Ok(from_read_lines(f))
 }
 
-pub fn from_read_lines<T, R>(r: R) -> ParseListIterator<T, Lines<BufReader<R>>>
+pub fn from_read_lines<T, R>(r: R) -> ParseListIterator<T, Filter<Lines<BufReader<R>>, fn(&Result<String, io::Error>) -> bool>>
 where T: FromStr,
       T::Err: Error + Send + Sync + 'static,
       R: Read {
@@ -94,11 +94,20 @@ where T: FromStr,
     from_bufread_lines(r)
 }
 
-pub fn from_bufread_lines<T, B>(b: B) -> ParseListIterator<T, Lines<B>>
-    where T: FromStr,
-          T::Err: Error + Send + Sync + 'static,
-          B: BufRead {
-    from_iter(b.lines())
+pub fn from_bufread_lines<T, B>(b: B) -> ParseListIterator<T, Filter<Lines<B>, fn(&Result<String, io::Error>) -> bool>>
+where T: FromStr,
+      T::Err: Error + Send + Sync + 'static,
+      B: BufRead {
+
+    fn nonblank(lr: &Result<String, io::Error>) -> bool {
+        let trimmed = lr.as_ref().map(|l| !l.trim().is_empty());
+        let nonblank = trimmed.unwrap_or(true);
+        nonblank
+    }
+
+    let without_blanks = b.lines().filter(nonblank as fn(&Result<String, io::Error>) -> bool);
+
+    from_iter(without_blanks)
 }
 
 // TODO: abstract io::Error
